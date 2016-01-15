@@ -47,4 +47,4 @@ class SetupExtension(object):
         log.info('+ Application Running!')
 
 
-    
+from .sendmailservice import SendMailService    
