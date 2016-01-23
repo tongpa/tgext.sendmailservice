@@ -35,6 +35,8 @@ class SendMailService(threading.Thread):
             self._activateEmail();
         if self.sendType == 3: 
             self._sendVolunteer();
+        if self.sendType == 4: 
+            self._activateEmail();    
         pass;
     
     def sendActivate(self,email):
@@ -45,7 +47,9 @@ class SendMailService(threading.Thread):
         self.email = email;
         self.sendType =1;
        
-    
+    def sendreActivate(self,email):
+        self.email = email;
+        self.sendType =  4; 
        
     def _activateEmail(self):
         self.__sendEmailByTemplate();
@@ -91,7 +95,12 @@ class SendMailService(threading.Thread):
     def __sendEmailByTemplate(self):
         try:
             #print "send email";
+            print self.sendType
+            
             self.forgot_template = model.EmailTemplate.getTemplateBy(self.sendType);
+            
+            print self.forgot_template
+            
             template = self.forgot_template.content_template;
             for k,v in  self.email.iteritems():
                 template = template.replace('[%s]' % k,v)
@@ -115,7 +124,7 @@ class SendMailService(threading.Thread):
             
             server.close();
         except Exception as e:
-            log.exception(e.value); 
+            log.exception(e); 
     
         
         
