@@ -64,7 +64,7 @@ class SendMailService(threading.Thread):
              
             msg = MIMEMultipart('alternative')
             msg['Subject'] = self.email.get('subject');
-            msg['From'] = self.email.get('from');
+            msg['From'] = self.email.get('from') + '<' +self.SMTP_USER +'>'; # 
             msg['To'] = self.email.get('email');
             #print "email : " ,self.email.get('from'); 
             
@@ -107,7 +107,7 @@ class SendMailService(threading.Thread):
             
             msg = MIMEMultipart('alternative')
             msg['Subject'] = self.forgot_template.subject;
-            msg['From'] = self.forgot_template.sender;
+            msg['From'] = self.forgot_template.sender+ '<' +self.SMTP_USER +'>';
             msg['To'] = self.email.get('email');
             
             part1 = MIMEText(template, 'html');
