@@ -5,8 +5,13 @@ from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText 
 import smtplib
 from tg.configuration import AppConfig, config
-from pollandsurvey import model
+ 
 from tg import request
+
+try:
+    from pollandsurvey import model
+except ImportError:
+    from ad2targetweb import model
 
 log = logging.getLogger(__name__);
 
