@@ -41,6 +41,7 @@ class SetupExtension(object):
 
         # Application Wrappers are much like easier WSGI Middleware
         # that get a TurboGears context and return a Response object.
+        
         self.configurator.register_wrapper(echo_wrapper_factory)
 
     def on_startup(self):
