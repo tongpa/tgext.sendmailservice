@@ -41,7 +41,11 @@ class SendMailService(threading.Thread):
         if self.sendType == 3: 
             self._sendVolunteer();
         if self.sendType == 4: 
-            self._activateEmail();    
+            self._activateEmail();   
+        if self.sendType == 6: 
+            self._deactivateEmail();   
+        if self.sendType == 7: 
+            self._deactivateEmail(); 
         pass;
     
     def sendActivate(self,email):
@@ -55,17 +59,35 @@ class SendMailService(threading.Thread):
     def sendreActivate(self,email):
         self.email = email;
         self.sendType =  4; 
+    
+    def senddeActivate(self,email):
+         self.email = email;
+         self.sendType =  6; 
+    
+    def sendWelcomeActivate(self,email):
+         self.email = email;
+         self.sendType =  7; 
        
     def _activateEmail(self):
         self.__sendEmailByTemplate();
                
     def _forgotPassword(self):
         self.__sendEmailByTemplate();
+    
+    def _deactivateEmail(self):
+        self.__sendEmailByTemplate();
         
     def _sendVolunteer(self):
-        
+        print "send email volunteer";
         try:
-            print "send email";
+            
+            
+            self.emailTemplate = model.SystemEnvironment.getEmailTemplate()
+            self.email_content = {}
+            self.email_content['email_content'] = self.template
+            
+            for k,v in  self.email_content.iteritems():
+                self.template = self.emailTemplate.replace('[%s]' % k,v)
              
             msg = MIMEMultipart('alternative')
             msg['Subject'] = self.email.get('subject');
@@ -87,6 +109,7 @@ class SendMailService(threading.Thread):
             server.close();
         except Exception as e:
             log.exception(str(e)); 
+            print "error exception"
     
     
     def sentEmail(self,email,template):
@@ -104,11 +127,23 @@ class SendMailService(threading.Thread):
             
             self.forgot_template = model.EmailTemplate.getTemplateBy(self.sendType);
             
+            self.emailTemplate = model.SystemEnvironment.getEmailTemplate()
+            
             print self.forgot_template
             
             template = self.forgot_template.content_template;
             for k,v in  self.email.iteritems():
                 template = template.replace('[%s]' % k,v)
+            
+            
+            self.email_content = {}
+            self.email_content['email_content'] = template
+            #print "mail template : %s" %(self.emailTemplate)
+            
+            for k,v in  self.email_content.iteritems():
+                template = self.emailTemplate.replace('[%s]' % k,v)
+                
+            
             
             msg = MIMEMultipart('alternative')
             msg['Subject'] = self.forgot_template.subject;
@@ -128,8 +163,10 @@ class SendMailService(threading.Thread):
             
             
             server.close();
+            del template
         except Exception as e:
             log.exception(e); 
+            print "error"
     
         
         
