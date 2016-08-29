@@ -34,7 +34,11 @@ class SetupExtension(object):
         self.configurator = configurator
 
     def __call__(self):
+        
         log.info('>>> Public files path is %s' % config['paths']['static_files'])
+        
+        
+        
         hooks.register('startup', self.on_startup)
         print "Sample hooks register"
         def echo_wrapper_factory(handler, config):

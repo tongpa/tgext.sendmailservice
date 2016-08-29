@@ -2,7 +2,7 @@ import tgscheduler
 from tg.configuration import milestones
 from tgext.pluggable import app_model
 from tg.configuration import AppConfig, config
-  
+from tg import request
 from tgscheduler import start_scheduler
 from tgscheduler.scheduler import add_interval_task
 
@@ -13,7 +13,7 @@ from surveymodel import *
 
 DBSession = PluggableSession()
 DeclarativeBase = declarative_base()
-
+import logging;
 log = logging.getLogger(__name__);
 from tgext.pylogservice import LogDBHandler;
 __all__ = ['MailScheduler', 'myThread'] 
@@ -65,7 +65,7 @@ class myThread (threading.Thread):
         self.name = name
         self.counter = counter
     def run(self):
-        
+        print ("Start Thread %s" %self.name)
         log.info("Start Thread %s" %self.name)
         sendMailScheduler = SendMailScheduler()
         sendMailScheduler.sendmail()

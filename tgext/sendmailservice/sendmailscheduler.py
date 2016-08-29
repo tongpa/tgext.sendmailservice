@@ -4,11 +4,11 @@ from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText 
 import smtplib
 from tg.configuration import AppConfig, config
-
+from tg import request
 import time
 from surveymodel import *
 import transaction
-
+import logging;
 log = logging.getLogger(__name__);
 from tgext.pylogservice import LogDBHandler;
 __all__ = ['SendMailScheduler', 'SendMailUser' ] 
@@ -23,19 +23,22 @@ class SendMailScheduler(object):
         self.sendmail = SendMail.querySendMail(page_size = 100)
         
         log.info("Query size : %s" %(len(self.sendmail)))
-        
+        print ("Query size : %s" %(len(self.sendmail)))
         for send in self.sendmail:
             print send
             sendMailUser = SendMailUser(send.sender_name,send.receive,send.subject,send.content)
             if( sendMailUser.sendToUser() ) :
                 send.updateStatus()
                 log.info("Status send to %s (%s) : True"  %(send.receive, send.id_send_mail))
+                print ("Status send to %s (%s) : True"  %(send.receive, send.id_send_mail))
             else:
                 log.info("Status send to %s (%s) : False"  %(send.receive, send.id_send_mail))
+                print ("Status send to %s (%s) : False"  %(send.receive, send.id_send_mail))
             
         
         if (len(self.sendmail) >0):
             log.info("Commit Database success")
+            print ("Commit Database success")
             transaction.commit()
             
 
