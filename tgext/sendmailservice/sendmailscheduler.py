@@ -31,16 +31,17 @@ class SendMailScheduler(object):
         
         init_model(self.engine)
         
+    def __template__(self):
+        self.template = self.engine.execute(self.emailtemplate)
+        self.temp_template =''
+        for r in self.template:
+            self.temp_template=r['description']
+        return self.temp_template
     
     def sendmail(self):
         conn  = self.engine.connect()
         result  = self.engine.execute(self.querymail)
-        template = self.engine.execute(self.emailtemplate)
-        
-       
-        print template[0]['description']
-        
-        
+        template = self.__template__()
         
         for r in result:
             print r['sender_name']
