@@ -36,6 +36,7 @@ class SendMailScheduler(object):
         self.temp_template =''
         for r in self.template:
             self.temp_template=r['description']
+            del r
         return self.temp_template
     
     def sendmail(self):
@@ -51,15 +52,7 @@ class SendMailScheduler(object):
         
             for k,v in  self.email_content.iteritems():
                 template = template.replace('[%s]' % k,v)
-            
-            
-            
             sendMailUser = SendMailUser(r['sender_name'],r['receive'],r['subject'], template )
-            
-            
-            
-            
-            
             if( sendMailUser.sendToUser() ) :
                 self.engine.execute( self.queryupdatestatus, {'status':'F', 'senddate':datetime.now(), 'id':r['id_send_mail']    }   )
                 log.info("Status send to %s (%s) : True"  %(r['receive'] , r['id_send_mail'] ))
