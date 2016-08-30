@@ -27,17 +27,42 @@ class SendMailScheduler(object):
         
         self.querymail = text("select * from sur_send_mail where status='W'")
         self.queryupdatestatus = text("update sur_send_mail set status=:status , sended_date=:senddate where id_send_mail=:id")
+        self.emailtemplate = text("select description from sur_sys_environment where environment_key='EMAIL_TEMPLATE'")
         
         init_model(self.engine)
-        
+    
+    def __template__(self):
+        self.template = self.engine.execute(self.emailtemplate)
+        for r in self.template:
+            
     
     def sendmail(self):
         conn  = self.engine.connect()
         result  = self.engine.execute(self.querymail)
+        template = self.engine.execute(self.emailtemplate)
+        
+       
+        print template[0]['description']
+        
+        
         
         for r in result:
             print r['sender_name']
-            sendMailUser = SendMailUser(r['sender_name'],r['receive'],r['subject'],r['content'] )
+            
+            self.email_content = {}
+            self.email_content['email_content'] = r['content']
+        
+            for k,v in  self.email_content.iteritems():
+                template = template.replace('[%s]' % k,v)
+            
+            
+            
+            sendMailUser = SendMailUser(r['sender_name'],r['receive'],r['subject'], template )
+            
+            
+            
+            
+            
             if( sendMailUser.sendToUser() ) :
                 self.engine.execute( self.queryupdatestatus, {'status':'F', 'senddate':datetime.now(), 'id':r['id_send_mail']    }   )
                 log.info("Status send to %s (%s) : True"  %(r['receive'] , r['id_send_mail'] ))
