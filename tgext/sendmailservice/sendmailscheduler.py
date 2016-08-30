@@ -6,12 +6,8 @@ import smtplib
 from tg.configuration import AppConfig, config
 from tg import request
 import time
-#from surveymodel import *
+from surveymodel import *
 import transaction
-from sqlalchemy import create_engine; 
-from sqlalchemy.sql import text
-from .models import  DeclarativeBase, init_model, DBSession, SendMail
-from datetime import datetime
 import logging;
 log = logging.getLogger(__name__);
 from tgext.pylogservice import LogDBHandler;
@@ -21,42 +17,30 @@ class SendMailScheduler(object):
     def __init__(self):
         dh = LogDBHandler( config=config,request=request);        
         log.addHandler(dh)
-        self.sendMail = SendMail
-        self.sqlConfig = config['sqlalchemy.url'] ;
-        self.engine = create_engine(self.sqlConfig);  
-        
-        self.querymail = text("select * from sur_send_mail where status='W'")
-        self.queryupdatestatus = text("update sur_send_mail set status=:status , sended_date=:senddate where id_send_mail=:id")
-        
-        init_model(self.engine)
-        
+       
     
     def sendmail(self):
-        conn  = self.engine.connect()
-        result  = self.engine.execute(self.querymail)
+        self.sendmail = SendMail.querySendMail(page_size = 100)
         
-        for r in result:
-            print r['sender_name']
-            sendMailUser = SendMailUser(r['sender_name'],r['receive'],r['subject'],r['content'] )
+        log.info("Query size : %s" %(len(self.sendmail)))
+        print ("Query size : %s" %(len(self.sendmail)))
+        for send in self.sendmail:
+            print send
+            sendMailUser = SendMailUser(send.sender_name,send.receive,send.subject,send.content)
             if( sendMailUser.sendToUser() ) :
-                self.engine.execute( self.queryupdatestatus, {'status':'F', 'senddate':datetime.now(), 'id':r['id_send_mail']    }   )
-                log.info("Status send to %s (%s) : True"  %(r['receive'] , r['id_send_mail'] ))
-                print ("Status send to %s (%s) : True"  %(r['receive'], r['id_send_mail'] ))
+                send.updateStatus()
+                log.info("Status send to %s (%s) : True"  %(send.receive, send.id_send_mail))
+                print ("Status send to %s (%s) : True"  %(send.receive, send.id_send_mail))
             else:
-                log.info("Status send to %s (%s) : False"  %(r['receive'], r['id_send_mail'] ))
-                print ("Status send to %s (%s) : False"  %(r['receive'], r['id_send_mail'] ))
-            del r
+                log.info("Status send to %s (%s) : False"  %(send.receive, send.id_send_mail))
+                print ("Status send to %s (%s) : False"  %(send.receive, send.id_send_mail))
+            
         
-        #if (len(self.sendmail) >0):
-        #    log.info("Commit Database success")
-        #    print ("Commit Database success")
-        #    transaction.commit()
-        
-        conn.close() 
-        transaction.commit()
-        del conn
-        del result
-        self.engine.dispose()
+        if (len(self.sendmail) >0):
+            log.info("Commit Database success")
+            print ("Commit Database success")
+            transaction.commit()
+            
 
 class SendMailUser(threading.Thread):  
     def __init__(self,mailFrom, mailTo,mailSubject, mailContent):
@@ -67,7 +51,7 @@ class SendMailUser(threading.Thread):
         self.SMTP_USER = config['smtp_user'] ;
         self.SMTP_PASSWORD = config['smtp_password'] ;   
         
-        #self.emailTemplate = SystemEnvironment.getEmailTemplate()   
+        self.emailTemplate = SystemEnvironment.getEmailTemplate()   
         self.mailFrom = mailFrom
         self.mailTo = mailTo
         self.mailSubject = mailSubject

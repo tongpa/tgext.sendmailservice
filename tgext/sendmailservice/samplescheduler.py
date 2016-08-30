@@ -10,7 +10,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from tgext.pluggable import PluggableSession
 
 from surveymodel import *
-
+import transaction
 DBSession = PluggableSession()
 DeclarativeBase = declarative_base()
 import logging;
@@ -19,7 +19,7 @@ from tgext.pylogservice import LogDBHandler;
 __all__ = ['MailScheduler', 'myThread'] 
 
 from .sendmailscheduler import SendMailScheduler
-
+from surveymodel import *
 
 def start_task():
     tgscheduler.start_scheduler()
@@ -67,11 +67,17 @@ class myThread (threading.Thread):
     def run(self):
         print ("Start Thread %s" %self.name)
         log.info("Start Thread %s" %self.name)
+        
+        
+        
+        
         sendMailScheduler = SendMailScheduler()
         sendMailScheduler.sendmail()
+        del sendMailScheduler
         log.info("Exiting Thread %s" %self.name)
-        
-
+        #transaction.commit()
+        #DBSession.close()
+        #DBSession.dispose()
     def showThread(self):
         self.start()
         
