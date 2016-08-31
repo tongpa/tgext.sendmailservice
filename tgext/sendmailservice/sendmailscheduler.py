@@ -29,7 +29,10 @@ class SendMailScheduler(object):
         self.queryupdatestatus = text("update sur_send_mail set status=:status , sended_date=:senddate where id_send_mail=:id")
         self.emailtemplate = text("select description from sur_sys_environment where environment_key='EMAIL_TEMPLATE'")
         
+        
         init_model(self.engine)
+        
+        self.template = self.__template__()
         
     def __template__(self):
         self.template = self.engine.execute(self.emailtemplate)
@@ -39,14 +42,20 @@ class SendMailScheduler(object):
             del r
         return self.temp_template
     
+    def __setSendMail(self,result):
+        data = []
+        for r in result:
+            self.engine.execute( self.queryupdatestatus, {'status':'S', 'senddate':datetime.now(), 'id':r['id_send_mail']    }   )
+            data.append(r)
+        transaction.commit()    
+        return data
     def sendmail(self):
         conn  = self.engine.connect()
         result  = self.engine.execute(self.querymail)
-        template = self.__template__()
+        template = self.template
+        result = self.__setSendMail(result)
         
         for r in result:
-            print r['sender_name']
-            
             self.email_content = {}
             self.email_content['email_content'] = r['content']
         
@@ -61,11 +70,6 @@ class SendMailScheduler(object):
                 log.info("Status send to %s (%s) : False"  %(r['receive'], r['id_send_mail'] ))
                 print ("Status send to %s (%s) : False"  %(r['receive'], r['id_send_mail'] ))
             del r
-        
-        #if (len(self.sendmail) >0):
-        #    log.info("Commit Database success")
-        #    print ("Commit Database success")
-        #    transaction.commit()
         
         conn.close() 
         transaction.commit()

@@ -65,7 +65,7 @@ class myThread (threading.Thread):
         self.name = name
         self.counter = counter
     def run(self):
-        print ("Start Thread %s" %self.name)
+        #print ("Start Thread %s" %self.name)
         log.info("Start Thread %s" %self.name)
         
         
