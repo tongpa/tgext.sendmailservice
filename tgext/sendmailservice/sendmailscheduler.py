@@ -28,11 +28,14 @@ class SendMailScheduler(object):
         self.querymail = text("select * from sur_send_mail where status='W'")
         self.queryupdatestatus = text("update sur_send_mail set status=:status , sended_date=:senddate where id_send_mail=:id")
         self.emailtemplate = text("select description from sur_sys_environment where environment_key='EMAIL_TEMPLATE'")
+        self.serverurl = text("select description from sur_sys_environment where environment_key='SERVER_URL'")
         
+        self.urltemplate = "http://{0}/images/imagermc/{1}"
         
         init_model(self.engine)
         
         self.template = self.__template__()
+        self.url = self.__serverurl__()
         
     def __template__(self):
         self.template = self.engine.execute(self.emailtemplate)
@@ -41,6 +44,15 @@ class SendMailScheduler(object):
             self.temp_template=r['description']
             del r
         return self.temp_template
+    
+    def __serverurl__(self):
+        self.url = self.engine.execute(self.serverurl)
+        self.temp_template ='localhost'
+        for r in self.url:
+            self.temp_template=r['description']
+            del r
+        return self.temp_template
+    
     
     def __setSendMail(self,result):
         data = []
@@ -58,9 +70,15 @@ class SendMailScheduler(object):
         for r in result:
             self.email_content = {}
             self.email_content['email_content'] = r['content']
+            self.email_content['url_check'] = self.urltemplate.format(self.url, r['gen_code'])
+            
+            template = self.template
         
             for k,v in  self.email_content.iteritems():
                 template = template.replace('[%s]' % k,v)
+            
+            
+            
             sendMailUser = SendMailUser(r['sender_name'],r['receive'],r['subject'], template )
             if( sendMailUser.sendToUser() ) :
                 self.engine.execute( self.queryupdatestatus, {'status':'F', 'senddate':datetime.now(), 'id':r['id_send_mail']    }   )
