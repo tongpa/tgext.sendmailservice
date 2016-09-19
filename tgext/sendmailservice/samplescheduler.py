@@ -9,7 +9,7 @@ from tgscheduler.scheduler import add_interval_task
 from sqlalchemy.ext.declarative import declarative_base
 from tgext.pluggable import PluggableSession
 
-from surveymodel import *
+ 
 import transaction
 DBSession = PluggableSession()
 DeclarativeBase = declarative_base()
@@ -20,7 +20,7 @@ __all__ = ['MailScheduler', 'myThread']
 
 from .sendmailscheduler import SendMailScheduler
 from surveymodel import *
-
+import socket
 def start_task():
     tgscheduler.start_scheduler()
     mailScheduler = MailScheduler()
@@ -30,6 +30,8 @@ def start_task():
 class MailScheduler(object):
     myCurrentThread = []
     lengThread = 1
+    runSendMail = None
+    sysServer = None
     def __init__(self):
         dh = LogDBHandler( config=config,request=request);        
         log.addHandler(dh)
@@ -48,12 +50,26 @@ class MailScheduler(object):
         return None
     def printTask(self):
         
-        self.cThread = self.manageThread();
-        if(self.cThread is not None):
-            log.info("Start current Thread %s" %self.cThread.getName())
-            self.cThread.showThread() 
-        
-        
+        self.runSendMail = self.checkRunSendMail()
+        if(self.runSendMail == 1):
+            self.cThread = self.manageThread();
+            if(self.cThread is not None):
+                log.info("Start current Thread %s" %self.cThread.getName())
+                self.cThread.showThread() 
+        else:
+            tgscheduler.stop_scheduler()
+            log.info("Server : %s(%s) is not permission run send mail" %s(self.sysServer.server_name, self.sysServer.ip_server))
+            
+    def checkRunSendMail(self):
+        if self.sysServer is None:
+            log.info( "Server Name : %s, Server IP : %s " %( socket.gethostname(), socket.gethostbyname(socket.gethostname()) ) )
+            self.sysServer = SysServer.getServerName(socket.gethostname())    
+            if self.sysServer is None:
+                self.sysServer = SysServer( server_name=socket.gethostname(), ip_server=socket.gethostbyname(socket.gethostname()), is_send_mail=0, active=1)
+        return self.sysServer.is_send_mail
+         
+
+
 
 import threading
 import time
