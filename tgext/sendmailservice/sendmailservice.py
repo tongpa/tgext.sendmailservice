@@ -95,7 +95,7 @@ class SendMailService(threading.Thread):
             msg['To'] = self.email.get('email');
             #print "email : " ,self.email.get('from'); 
             
-            part1 = MIMEText(self.template, 'html');
+            part1 = MIMEText(self.template, 'html', "utf-8");
             msg.attach(part1)
             
             
@@ -150,7 +150,7 @@ class SendMailService(threading.Thread):
             msg['From'] = self.forgot_template.sender+ '<' +self.SMTP_USER +'>';
             msg['To'] = self.email.get('email');
             
-            part1 = MIMEText(template, 'html');
+            part1 = MIMEText(template, 'html', "utf-8");
             msg.attach(part1)
             
             

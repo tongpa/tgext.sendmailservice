@@ -123,7 +123,7 @@ class SendMailUser(threading.Thread):
             msg['From'] = self.mailFrom + '<' +self.SMTP_USER +'>'; #       self.SMTP_USER #self.mailFrom;
             msg['To'] = self.mailTo;
             
-            part1 = MIMEText(self.mailContent, 'html');
+            part1 = MIMEText(self.mailContent, 'html', "utf-8");
             msg.attach(part1)
             
             
