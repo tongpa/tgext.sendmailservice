@@ -13,17 +13,19 @@ from sqlalchemy.sql import text
 from .models import  DeclarativeBase, init_model, DBSession, SendMail
 from datetime import datetime
 import logging;
+from sqlalchemy.pool import NullPool
 log = logging.getLogger(__name__);
-from tgext.pylogservice import LogDBHandler;
+from tgext.pylogservice import LogDBHandler
 __all__ = ['SendMailScheduler', 'SendMailUser' ] 
 
 class SendMailScheduler(object):
     def __init__(self):
-        dh = LogDBHandler( config=config,request=request);        
-        log.addHandler(dh)
+        #dh = LogDBHandler( config=config,request=request);        
+        #log.addHandler(dh)
         self.sendMail = SendMail
         self.sqlConfig = config['sqlalchemy.url'] ;
-        self.engine = create_engine(self.sqlConfig);  
+        self.engine = create_engine(self.sqlConfig,                                    
+                       pool_size=20, max_overflow=0);  
         
         self.querymail = text("select * from sur_send_mail where status='W'")
         self.queryupdatestatus = text("update sur_send_mail set status=:status , sended_date=:senddate where id_send_mail=:id")
@@ -60,13 +62,14 @@ class SendMailScheduler(object):
             self.engine.execute( self.queryupdatestatus, {'status':'S', 'senddate':datetime.now(), 'id':r['id_send_mail']    }   )
             data.append(r)
         transaction.commit()    
+        result.close()
         return data
     def sendmail(self):
         conn  = self.engine.connect()
         result  = self.engine.execute(self.querymail)
         template = self.template
         result = self.__setSendMail(result)
-        
+        #print "sendMail : %s" %(len(result))
         for r in result:
             self.email_content = {}
             self.email_content['email_content'] = r['content']
@@ -82,10 +85,11 @@ class SendMailScheduler(object):
             sendMailUser = SendMailUser(r['sender_name'],r['receive'],r['subject'], template )
             if( sendMailUser.sendToUser() ) :
                 self.engine.execute( self.queryupdatestatus, {'status':'F', 'senddate':datetime.now(), 'id':r['id_send_mail']    }   )
-                log.info("Status send to %s (%s) : True"  %(r['receive'] , r['id_send_mail'] ))
+                #log.info("Status send to %s (%s) : True"  %(r['receive'] , r['id_send_mail'] ))
                 print ("Status send to %s (%s) : True"  %(r['receive'], r['id_send_mail'] ))
             else:
-                log.info("Status send to %s (%s) : False"  %(r['receive'], r['id_send_mail'] ))
+                self.engine.execute( self.queryupdatestatus, {'status':'W', 'senddate':None, 'id':r['id_send_mail']    }   )
+                #log.info("Status send to %s (%s) : False"  %(r['receive'], r['id_send_mail'] ))
                 print ("Status send to %s (%s) : False"  %(r['receive'], r['id_send_mail'] ))
             del r
         
@@ -138,5 +142,6 @@ class SendMailUser(threading.Thread):
             return True
             
         except Exception as e:
-            log.exception("error : %s" %str(e)); 
+            #log.exception("error : %s" %str(e));
+            print ("error : %s" %str(e));
             return False

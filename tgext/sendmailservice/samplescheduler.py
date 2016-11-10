@@ -1,8 +1,9 @@
 import tgscheduler
 from tg.configuration import milestones
 from tgext.pluggable import app_model
-from tg.configuration import AppConfig, config
-from tg import request
+#from tg.configuration import AppConfig, config
+
+from tg import request, config
 from tgscheduler import start_scheduler
 from tgscheduler.scheduler import add_interval_task
 
@@ -15,7 +16,7 @@ DBSession = PluggableSession()
 DeclarativeBase = declarative_base()
 import logging;
 log = logging.getLogger(__name__);
-from tgext.pylogservice import LogDBHandler;
+#from tgext.pylogservice import LogDBHandler;
 __all__ = ['MailScheduler', 'myThread'] 
 
 from .sendmailscheduler import SendMailScheduler
@@ -33,9 +34,10 @@ class MailScheduler(object):
     runSendMail = None
     sysServer = None
     def __init__(self):
-        dh = LogDBHandler( config=config,request=request);        
-        log.addHandler(dh)
-        
+        #print "init"
+        #print config
+ #       dh = LogDBHandler( config=config,request=request);        
+ #       log.addHandler(dh)        
         self.threadid = 1
         log.info('init Thread')
         for num in range(0,self.lengThread):
@@ -54,15 +56,15 @@ class MailScheduler(object):
         if(self.runSendMail == 1):
             self.cThread = self.manageThread();
             if(self.cThread is not None):
-                log.info("Start current Thread %s" %self.cThread.getName())
+                #log.info("Start current Thread %s" %self.cThread.getName())
                 self.cThread.showThread() 
         else:
             tgscheduler.stop_scheduler()
-            log.info("Server : %s(%s) is not permission run send mail" %s(self.sysServer.server_name, self.sysServer.ip_server))
+            #log.info("Server : %s(%s) is not permission run send mail" %s(self.sysServer.server_name, self.sysServer.ip_server))
             
     def checkRunSendMail(self):
         if self.sysServer is None:
-            log.info( "Server Name : %s, Server IP : %s " %( socket.gethostname(), socket.gethostbyname(socket.gethostname()) ) )
+            #log.info( "Server Name : %s, Server IP : %s " %( socket.gethostname(), socket.gethostbyname(socket.gethostname()) ) )
             self.sysServer = SysServer.getServerName(socket.gethostname())    
             if self.sysServer is None:
                 self.sysServer = SysServer( server_name=socket.gethostname(), ip_server=socket.gethostbyname(socket.gethostname()), is_send_mail=0, active=1)
@@ -82,15 +84,11 @@ class myThread (threading.Thread):
         self.counter = counter
     def run(self):
         #print ("Start Thread %s" %self.name)
-        log.info("Start Thread %s" %self.name)
-        
-        
-        
-        
+        #log.info("Start Thread %s" %self.name)
         sendMailScheduler = SendMailScheduler()
         sendMailScheduler.sendmail()
         del sendMailScheduler
-        log.info("Exiting Thread %s" %self.name)
+        #log.info("Exiting Thread %s" %self.name)
         #transaction.commit()
         #DBSession.close()
         #DBSession.dispose()
@@ -105,18 +103,3 @@ def print_time(threadName, delay, counter):
         print "%s: %s: %s" % (threadName, counter, time.ctime(time.time()))
         counter -= 1
 
-"""
-def update_stocks():
-    
-    print 'Hello Update'
-        
-
-import tgscheduler
-def start_tgscheduler():
-    
-    tgscheduler.start_scheduler()
-    tgscheduler.add_interval_task( action= update_stocks, taskname="test1" , interval=5, initialdelay=5)
-
-from tg.configuration import milestones
-milestones.config_ready.register(start_tgscheduler)
-"""

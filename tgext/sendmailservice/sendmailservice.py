@@ -1,13 +1,11 @@
- 
+# -*- coding: utf-8 -*- 
 import logging;
 import threading;
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText 
 import smtplib
-from tg.configuration import AppConfig, config
- 
+from tg.configuration import AppConfig, config 
 from tg import request
-
 try:
     from pollandsurvey import model
 except ImportError:
@@ -16,7 +14,7 @@ except ImportError:
 log = logging.getLogger(__name__);
 
 #from  logsurvey import LogDBHandler;
-from tgext.pylogservice import LogDBHandler;
+from tgext.pylogservice import LogDBHandler
 __all__ = ['SendMailService'] 
 class SendMailService(threading.Thread):
 
@@ -28,7 +26,7 @@ class SendMailService(threading.Thread):
         self.SMTP_USER = config['smtp_user'] ;
         self.SMTP_PASSWORD = config['smtp_password'] ;
         
-        dh = LogDBHandler( config=config,request=request);        
+        dh = LogDBHandler( config=config,request=request);
         log.addHandler(dh)
         
     
@@ -80,8 +78,6 @@ class SendMailService(threading.Thread):
     def _sendVolunteer(self):
         print "send email volunteer";
         try:
-            
-            
             self.emailTemplate = model.SystemEnvironment.getEmailTemplate()
             self.email_content = {}
             self.email_content['email_content'] = self.template

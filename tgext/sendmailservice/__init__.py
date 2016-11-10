@@ -36,16 +36,11 @@ class SetupExtension(object):
     def __call__(self):
         
         log.info('>>> Public files path is %s' % config['paths']['static_files'])
-        
-        
-        
         hooks.register('startup', self.on_startup)
         print "Sample hooks register"
         def echo_wrapper_factory(handler, config):
-            def echo_wrapper(controller, environ, context):
-                
-                log.info('Serving: %s' % context.request.path)
-                
+            def echo_wrapper(controller, environ, context):                
+                log.info('Serving: %s' % context.request.path)                
                 return handler(controller, environ, context)
             return echo_wrapper
 
@@ -59,9 +54,8 @@ class SetupExtension(object):
         
         print "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
         print "start up run send mail service"
-       
-        from tg.configuration import milestones
         
+        from tg.configuration import milestones        
         milestones.config_ready.register(start_task)
         
         #start_tgscheduler = SampleScheduler(self.configurator)
