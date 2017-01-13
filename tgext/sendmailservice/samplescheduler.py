@@ -53,6 +53,7 @@ class MailScheduler(object):
     def printTask(self):
         
         self.runSendMail = self.checkRunSendMail()
+        
         if(self.runSendMail == 1):
             self.cThread = self.manageThread();
             if(self.cThread is not None):

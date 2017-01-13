@@ -6,6 +6,7 @@ from email.MIMEText import MIMEText
 import smtplib
 from tg.configuration import AppConfig, config 
 from tg import request
+import time
 try:
     from pollandsurvey import model
 except ImportError:
@@ -89,6 +90,7 @@ class SendMailService(threading.Thread):
             msg['Subject'] = self.email.get('subject');
             msg['From'] = self.email.get('from') + '<' +self.SMTP_USER +'>'; # 
             msg['To'] = self.email.get('email');
+            msg['Date'] = time.asctime()
             #print "email : " ,self.email.get('from'); 
             
             part1 = MIMEText(self.template, 'html', "utf-8");
@@ -145,12 +147,12 @@ class SendMailService(threading.Thread):
             msg['Subject'] = self.forgot_template.subject;
             msg['From'] = self.forgot_template.sender+ '<' +self.SMTP_USER +'>';
             msg['To'] = self.email.get('email');
-            
+            msg['Date'] = time.asctime()
             part1 = MIMEText(template, 'html', "utf-8");
             msg.attach(part1)
             
             
-            server = smtplib.SMTP(self.SMTP_SERVER,self.SMTP_PORT) 
+            server = smtplib.SMTP(host=self.SMTP_SERVER,port=self.SMTP_PORT) #465
             server.ehlo()
             server.starttls()
             server.login(self.SMTP_USER, self.SMTP_PASSWORD)
