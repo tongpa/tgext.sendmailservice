@@ -122,7 +122,7 @@ class SendMailService(threading.Thread):
     def __sendEmailByTemplate(self):
         try:
             #print "send email";
-            print self.sendType
+            print "send mail type : %s" %self.sendType
             
             self.forgot_template = model.EmailTemplate.getTemplateBy(self.sendType);
             
@@ -153,7 +153,7 @@ class SendMailService(threading.Thread):
             msg.attach(part1)
             
             
-            server = smtplib.SMTP(host=self.SMTP_SERVER,port=self.SMTP_PORT) #465
+            #server = smtplib.SMTP(host=self.SMTP_SERVER,port=self.SMTP_PORT) #465
             server = smtplib.SMTP_SSL(host=self.SMTP_SERVER,port=self.SMTP_PORT) #465
             
             #server.ehlo()
@@ -161,12 +161,12 @@ class SendMailService(threading.Thread):
             server.login(self.SMTP_USER, self.SMTP_PASSWORD)
             server.sendmail(self.SMTP_USER, [self.email.get('email')], msg.as_string())
             
-            
-            
-            server.close();
+            print "sucess"
+            server.quit()
+            #server.close();
             del template
         except Exception as e:
-            log.exception(e); 
+            log.exception(e)
             print "error"
     
         
