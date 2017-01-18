@@ -131,9 +131,9 @@ class SendMailUser(threading.Thread):
             msg.attach(part1)
             
             
-            server = smtplib.SMTP(host=self.SMTP_SERVER,port=self.SMTP_PORT) 
-            server.ehlo()
-            server.starttls()
+            server = smtplib.SMTP_SSL(host=self.SMTP_SERVER,port=self.SMTP_PORT) 
+            #server.ehlo()
+            #server.starttls()
             server.login(self.SMTP_USER, self.SMTP_PASSWORD)
             server.sendmail(self.SMTP_USER, [self.mailTo], msg.as_string())            
             
