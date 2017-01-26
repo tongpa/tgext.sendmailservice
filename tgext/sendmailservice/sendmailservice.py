@@ -98,14 +98,15 @@ class SendMailService(threading.Thread):
             
             
             #server = smtplib.SMTP(self.SMTP_SERVER,self.SMTP_PORT) 
-            server = smtplib.SMTP_SSL(host=self.SMTP_SERVER,port=self.SMTP_PORT) 
+            server = smtplib.SMTP(host=self.SMTP_SERVER,port=self.SMTP_PORT) 
+            server.set_debuglevel(False)
             #server.ehlo()
-            #server.starttls()
+            server.starttls()
             server.login(self.SMTP_USER, self.SMTP_PASSWORD)
             server.sendmail(self.SMTP_USER, [self.email.get('email')], msg.as_string())
             
             #print msg.as_string()
-            server.close();
+            server.quit();
         except Exception as e:
             log.exception(str(e)); 
             print "error exception"
@@ -154,14 +155,14 @@ class SendMailService(threading.Thread):
             
             
             #server = smtplib.SMTP(host=self.SMTP_SERVER,port=self.SMTP_PORT) #465
-            server = smtplib.SMTP_SSL(host=self.SMTP_SERVER,port=self.SMTP_PORT) #465
-            
+            server = smtplib.SMTP(host=self.SMTP_SERVER,port=self.SMTP_PORT) #465
+            server.set_debuglevel(False)
             #server.ehlo()
-            #server.starttls()
+            server.starttls()
             server.login(self.SMTP_USER, self.SMTP_PASSWORD)
             server.sendmail(self.SMTP_USER, [self.email.get('email')], msg.as_string())
             
-            print "sucess"
+            
             server.quit()
             #server.close();
             del template

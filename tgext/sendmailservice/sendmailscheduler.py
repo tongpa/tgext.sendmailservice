@@ -130,15 +130,17 @@ class SendMailUser(threading.Thread):
             part1 = MIMEText(self.mailContent, 'html', "utf-8");
             msg.attach(part1)
             
-            
-            server = smtplib.SMTP_SSL(host=self.SMTP_SERVER,port=self.SMTP_PORT) 
+           
+            #server = smtplib.SMTP_SSL(host=self.SMTP_SERVER,port=self.SMTP_PORT) 
+            server = smtplib.SMTP(host=self.SMTP_SERVER,port=self.SMTP_PORT)
+            server.set_debuglevel(False)
             #server.ehlo()
-            #server.starttls()
+            server.starttls()
             server.login(self.SMTP_USER, self.SMTP_PASSWORD)
             server.sendmail(self.SMTP_USER, [self.mailTo], msg.as_string())            
             
             
-            server.close();
+            server.quit();
             return True
             
         except Exception as e:
