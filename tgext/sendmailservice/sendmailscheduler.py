@@ -112,8 +112,7 @@ class SendMailScheduler(object):
         return None
     
     def sendmailWithSMTP(self,smtps):
-        if smtps:
-            
+        if smtps:            
             conn  = self.engine.connect()
             result  = self.engine.execute(self.querymail)
             template = self.template
