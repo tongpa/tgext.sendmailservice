@@ -168,7 +168,7 @@ class SendMailService(threading.Thread):
             del template
         except Exception as e:
             log.exception(e)
-            print "error"
+            print "error : %s" %str(e);
     
         
         
