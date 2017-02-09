@@ -20,7 +20,7 @@ log = logging.getLogger(__name__);
 __all__ = ['MailScheduler', 'myThread'] 
 
 from .sendmailscheduler import SendMailScheduler
-from surveymodel import *
+from surveymodel import SysServer, ConfigMailService
 import socket
 def start_task():
     tgscheduler.start_scheduler()
@@ -33,6 +33,7 @@ class MailScheduler(object):
     lengThread = 1
     runSendMail = None
     sysServer = None
+    SMTP=None
     def __init__(self):
         #print "init"
         #print config
@@ -44,7 +45,7 @@ class MailScheduler(object):
             self.myCurrentThread.append(myThread(num, "Thread-"+str(num), (self.lengThread -1) ))
         
 
-    def manageThread(self):
+    def manageThread(self, smtps):
         for self.num in range(0,self.lengThread):
             if (not self.myCurrentThread[self.num].isAlive() ):
                 self.myCurrentThread[self.num]  = myThread(self.num, "Thread-"+str(self.num), 1)
@@ -55,9 +56,12 @@ class MailScheduler(object):
         self.runSendMail = self.checkRunSendMail()
         
         if(self.runSendMail == 1):
-            self.cThread = self.manageThread();
+            self.SMTP = self.checkSMTPServer()
+            
+            self.cThread = self.manageThread(smtps = self.SMTP)
             if(self.cThread is not None):
                 #log.info("Start current Thread %s" %self.cThread.getName())
+                self.cThread.setSMTPs(smtps = self.SMTP)
                 self.cThread.showThread() 
         else:
             tgscheduler.stop_scheduler()
@@ -71,8 +75,14 @@ class MailScheduler(object):
                 self.sysServer = SysServer( server_name=socket.gethostname(), ip_server=socket.gethostbyname(socket.gethostname()), is_send_mail=0, active=1)
         return self.sysServer.is_send_mail
          
-
-
+    def checkSMTPServer(self):
+        if self.SMTP is None :
+            self.SMTP = ConfigMailService.getAll(act=1)
+        return self.SMTP    
+    def __printSMTP__(self):
+        print "leng : %s" %len(self.SMTP)
+        for smtp in self.SMTP:
+            print smtp
 
 import threading
 import time
@@ -83,11 +93,15 @@ class myThread (threading.Thread):
         self.threadID = threadID
         self.name = name
         self.counter = counter
+        
+    def setSMTPs(self, smtps):
+        self.smtps = smtps
     def run(self):
         #print ("Start Thread %s" %self.name)
         #log.info("Start Thread %s" %self.name)
         sendMailScheduler = SendMailScheduler()
-        sendMailScheduler.sendmail()
+        #sendMailScheduler.sendmail()
+        sendMailScheduler.sendmailWithSMTP(self.smtps)
         del sendMailScheduler
         #log.info("Exiting Thread %s" %self.name)
         #transaction.commit()
