@@ -28,7 +28,7 @@ class SendMailScheduler(object):
         #log.addHandler(dh)
         self.SMTP = []
         self.sendMail = SendMail
-        self.sqlConfig = config['sqlalchemy.url'] ;
+        self.sqlConfig = config['sqlalchemy.url'] ;#config['sqlalchemy.master.url'] ;#config['sqlalchemy.url'] ;
         self.engine = create_engine(self.sqlConfig,                                    
                        pool_size=20, max_overflow=0);  
         
@@ -221,6 +221,8 @@ class SendMailUser(threading.Thread):
             self.ISTLS = 1
             self.DEBUGLEVEL = 0
             self.MAX_PER_DAY  = 90000
+        
+        print "host : port ; %s : %s" %(self.SMTP_SERVER, self.SMTP_PORT)
         
         #self.emailTemplate = SystemEnvironment.getEmailTemplate()   
         self.mailFrom = mailFrom
